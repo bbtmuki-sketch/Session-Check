@@ -20,12 +20,12 @@ jobs:
           node-version: "20"
 
       - name: Daten abrufen
-        run: node scripts/fetch-daily.mjs
+        run: node session-bias-dashboard/scripts/fetch-daily.mjs
 
       - name: Änderungen committen
         run: |
           git config user.name "daily-data-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/daily.json
+          git add session-bias-dashboard/data/daily.json
           git diff --cached --quiet || git commit -m "Tägliche Marktdaten aktualisiert"
           git push
