@@ -97,44 +97,85 @@ async function fetchVix() {
   };
 }
 
-// ---------- 3. Stooq SPX ----------
-async function fetchSpx() {
+// ---------- 3. SPX (Stooq, Fallback Yahoo) ----------
+function describe(e) {
+  const c = e && e.cause ? ` | Ursache: ${e.cause.code || e.cause.message}` : "";
+  return `${e.message}${c}`;
+}
+
+function lastTwo(rows) {
+  const last = rows[rows.length - 1];
+  const prev = rows[rows.length - 2];
+  return {
+    close: last.close,
+    prev_close: prev.close,
+    change_pct: Number((((last.close - prev.close) / prev.close) * 100).toFixed(2)),
+    as_of: last.date,
+  };
+}
+
+async function fetchSpxStooq() {
   const res = await fetch("https://stooq.com/q/d/l/?s=%5Espx&i=d");
   if (!res.ok) throw new Error(`Stooq SPX: HTTP ${res.status}`);
-  const text = await res.text();
-  const lines = text.trim().split("\n").filter(Boolean);
-  if (lines.length < 3) throw new Error("Stooq SPX: unerwartet wenig Daten, Symbol prüfen");
-  const last = lines[lines.length - 1].split(",");
-  const prev = lines[lines.length - 2].split(",");
-  const close = parseFloat(last[4]);
-  const prevClose = parseFloat(prev[4]);
-  return {
-    close,
-    prev_close: prevClose,
-    change_pct: Number((((close - prevClose) / prevClose) * 100).toFixed(2)),
-    as_of: last[0],
-  };
+  const lines = (await res.text()).trim().split("\n").filter(Boolean);
+  if (lines.length < 3) throw new Error("Stooq SPX: unerwartet wenig Daten");
+  const rows = lines.slice(1).map((l) => {
+    const c = l.split(",");
+    return { date: c[0], close: parseFloat(c[4]) };
+  });
+  return { source: "Stooq", ...lastTwo(rows) };
+}
+
+// Inoffizieller Yahoo-Chart-Endpunkt, nur als Fallback. Nicht garantiert stabil.
+async function fetchSpxYahoo() {
+  const res = await fetch(
+    "https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?range=10d&interval=1d",
+    { headers: { "User-Agent": "Mozilla/5.0 (compatible; session-bias-dashboard/1.0)" } }
+  );
+  if (!res.ok) throw new Error(`Yahoo SPX: HTTP ${res.status}`);
+  const j = await res.json();
+  const r = j?.chart?.result?.[0];
+  const ts = r?.timestamp;
+  const closes = r?.indicators?.quote?.[0]?.close;
+  if (!ts || !closes) throw new Error("Yahoo SPX: unerwartetes Antwortformat");
+  const rows = ts
+    .map((t, i) => ({ date: new Date(t * 1000).toISOString().slice(0, 10), close: closes[i] }))
+    .filter((p) => p.close != null);
+  if (rows.length < 2) throw new Error("Yahoo SPX: zu wenig Datenpunkte");
+  return { source: "Yahoo Finance (inoffiziell)", ...lastTwo(rows) };
+}
+
+async function fetchSpx() {
+  try {
+    return await fetchSpxStooq();
+  } catch (e1) {
+    console.error("Stooq fehlgeschlagen, versuche Yahoo:", describe(e1));
+    return await fetchSpxYahoo();
+  }
 }
 
 // ---------- 4. CFTC TFF (unverifiziert) ----------
 async function fetchCftc() {
+  // 13874A = E-mini S&P 500 (Mikro-Kontrakt hat 13874U, das haben wir im ersten Lauf gesehen).
   const params = new URLSearchParams({
+    "$where": "cftc_contract_market_code='13874A'",
     "$order": "report_date_as_yyyy_mm_dd DESC",
-    "$limit": "8",
-    "$q": "E-MINI S&P 500",
+    "$limit": "1",
   });
   const url = `https://publicreporting.cftc.gov/resource/gpe5-46if.json?${params.toString()}`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`CFTC: HTTP ${res.status}`);
   const rows = await res.json();
-
-  if (!rows.length) throw new Error("CFTC: keine Zeilen zurückgegeben, Suchbegriff prüfen");
-
-  // Felder NICHT blind vertrauen: erst loggen, dann erst verwenden.
-  console.log("CFTC — erste Zeile, rohe Felder zur Kontrolle:", JSON.stringify(rows[0], null, 2));
+  if (!rows.length) throw new Error("CFTC: keine Zeilen für Marktcode 13874A");
 
   const r = rows[0];
+  const market = r.market_and_exchange_names || "";
+  console.log("CFTC Markt:", market, "| Stand:", r.report_date_as_yyyy_mm_dd);
+  if (!/E-MINI S&P 500/i.test(market) || /MICRO/i.test(market)) {
+    throw new Error(`CFTC: falscher Markt geliefert (${market}). Marktcode prüfen.`);
+  }
+
   const required = [
     "report_date_as_yyyy_mm_dd",
     "dealer_positions_long_all",
@@ -143,30 +184,17 @@ async function fetchCftc() {
     "lev_money_positions_short",
   ];
   const missing = required.filter((f) => !(f in r));
-  if (missing.length) {
-    throw new Error(
-      `CFTC: erwartete Felder fehlen (${missing.join(", ")}). ` +
-        `Feldnamen im Skript anpassen — siehe geloggte Rohdaten oben.`
-    );
-  }
+  if (missing.length) throw new Error(`CFTC: Felder fehlen (${missing.join(", ")})`);
 
   const reportDate = r.report_date_as_yyyy_mm_dd.slice(0, 10);
-  const ageDays = Math.round(
-    (Date.now() - new Date(reportDate).getTime()) / 86400000
-  );
-  const dealerNet =
-    Number(r.dealer_positions_long_all) - Number(r.dealer_positions_short_all);
-  const levNet =
-    Number(r.lev_money_positions_long) - Number(r.lev_money_positions_short);
-
+  const ageDays = Math.round((Date.now() - new Date(reportDate).getTime()) / 86400000);
   return {
     status: "ok",
+    market,
     report_date: reportDate,
     age_days: ageDays,
-    dealer_net: dealerNet,
-    leveraged_net: levNet,
-    // Perzentil über die Historie ist bewusst NICHT enthalten — dafür bräuchte es
-    // einen 52-Wochen-Abruf, das ist eine spätere Ausbaustufe, kein V1-Bestandteil.
+    dealer_net: Number(r.dealer_positions_long_all) - Number(r.dealer_positions_short_all),
+    leveraged_net: Number(r.lev_money_positions_long) - Number(r.lev_money_positions_short),
   };
 }
 
@@ -199,10 +227,10 @@ async function main() {
   }
 
   try {
-    out.spx = { source: "Stooq", ...(await fetchSpx()) };
+    out.spx = await fetchSpx();
   } catch (e) {
-    console.error("SPX-Fehler:", e.message);
-    out.spx = { ...previous.spx, error: e.message };
+    console.error("SPX-Fehler:", describe(e));
+    out.spx = { ...previous.spx, error: describe(e) };
   }
 
   try {
