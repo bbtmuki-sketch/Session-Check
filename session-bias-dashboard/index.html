@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Session-Check</title>
+<style>
+  :root {
+    --bg: #14130f;
+    --panel: #1d1b16;
+    --panel-2: #23211a;
+    --border: #302d22;
+    --text: #ede9e0;
+    --text-dim: #9a9384;
+    --accent: #c9a15f;
+    --low: #5c8b7a;
+    --med: #c9a15f;
+    --high: #b0503a;
+    --radius: 3px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  main {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+  header.masthead {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+    margin-bottom: 22px;
+  }
+  header.masthead h1 {
+    font-family: Georgia, "Times New Roman", ui-serif, serif;
+    font-weight: 400;
+    font-size: 26px;
+    letter-spacing: 0.02em;
+    margin: 0 0 4px;
+  }
+  header.masthead .date {
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+  }
+  section { margin-bottom: 26px; }
+  h2 {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+    margin: 0 0 10px;
+    text-transform: uppercase;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .label { color: var(--text-dim); font-size: 13px; }
+  .stat-row .value {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .stat-row .value.up { color: var(--low); }
+  .stat-row .value.down { color: var(--high); }
+  .event-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    font-size: 13px;
+  }
+  .event-row .time {
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .muted { color: var(--text-dim); font-size: 13px; }
+  .stale-badge {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1px 6px;
+    margin-left: 6px;
+  }
+
+  .choice-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .choice-btn {
+    flex: 1;
+    min-width: 70px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 10px 8px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .choice-btn.selected {
+    border-color: var(--accent);
+    background: var(--panel-2);
+    color: var(--accent);
+  }
+  textarea, .choice-btn, button.primary {
+    font-family: inherit;
+  }
+  textarea {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-size: 13px;
+    resize: vertical;
+    min-height: 60px;
+  }
+  button.primary {
+    width: 100%;
+    background: var(--accent);
+    color: #14130f;
+    border: none;
+    border-radius: var(--radius);
+    padding: 13px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    margin-top: 18px;
+  }
+  button.primary:active { opacity: 0.85; }
+
+  .checklist-item {
+    border-left: 3px solid var(--border);
+    padding: 8px 0 8px 12px;
+    margin-bottom: 8px;
+    font-size: 13.5px;
+  }
+  .checklist-item.low { border-left-color: var(--low); }
+  .checklist-item.med { border-left-color: var(--med); }
+  .checklist-item.high { border-left-color: var(--high); }
+  .checklist-item .tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+    display: block;
+    margin-bottom: 2px;
+  }
+  #result { display: none; }
+  .disclaimer {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+    padding-top: 12px;
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <header class="masthead">
+    <h1>Session-Check</h1>
+    <div class="date" id="today-label"></div>
+  </header>
+
+  <section>
+    <h2>Kalender heute (USD, hohe Relevanz)</h2>
+    <div class="panel" id="calendar-panel">
+      <span class="muted">wird geladen…</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Marktkontext</h2>
+    <div class="panel" id="context-panel">
+      <span class="muted">wird geladen…</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Deine Stimmung</h2>
+    <div class="choice-group" id="mood-group">
+      <button class="choice-btn" data-mood="1">Sehr schlecht</button>
+      <button class="choice-btn" data-mood="2">Schlecht</button>
+      <button class="choice-btn" data-mood="3">Neutral</button>
+      <button class="choice-btn" data-mood="4">Gut</button>
+      <button class="choice-btn" data-mood="5">Sehr gut</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Letzter Trade</h2>
+    <div class="choice-group" id="trade-group">
+      <button class="choice-btn" data-trade="loss">Verlust</button>
+      <button class="choice-btn" data-trade="be">Breakeven</button>
+      <button class="choice-btn" data-trade="win">Gewinn</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Dein Flow-Read (optional, aus ATAS)</h2>
+    <textarea id="flow-read" placeholder="z. B. CVD divergent am Overnight-High, Absorption bei 6180…"></textarea>
+  </section>
+
+  <button class="primary" id="generate-btn">Checkliste erstellen</button>
+
+  <section id="result">
+    <h2>Risiko-Checkliste</h2>
+    <div id="checklist-output"></div>
+  </section>
+
+  <div class="disclaimer">
+    Keine Anlage- oder Handelsempfehlung. Rein regelbasierte Prozess-Checkliste aus
+    öffentlich zugänglichen Daten (Forex Factory, CBOE, Stooq, CFTC) und deinen Eingaben.
+    Trifft keine Aussage über die tatsächliche institutionelle Positionierung während der Session.
+  </div>
+
+</main>
+
+<script>
+const VIENNA_TZ = "Europe/Vienna";
+let DATA = null;
+let mood = null;
+let trade = null;
+
+function fmtPct(v) {
+  if (v === null || v === undefined || Number.isNaN(v)) return "–";
+  const sign = v > 0 ? "+" : "";
+  return `${sign}${v.toFixed(2)}%`;
+}
+
+function ageLabel(days) {
+  if (days === null || days === undefined) return "";
+  if (days <= 1) return "";
+  return `<span class="stale-badge">${days} Tage alt</span>`;
+}
+
+async function loadData() {
+  try {
+    const res = await fetch("data/daily.json?_=" + Date.now());
+    DATA = await res.json();
+  } catch (e) {
+    DATA = null;
+  }
+  render();
+}
+
+function render() {
+  const todayLabel = document.getElementById("today-label");
+  const now = new Date();
+  todayLabel.textContent = new Intl.DateTimeFormat("de-AT", {
+    timeZone: VIENNA_TZ, weekday: "long", day: "2-digit", month: "long",
+  }).format(now);
+
+  renderCalendar();
+  renderContext();
+}
+
+function renderCalendar() {
+  const el = document.getElementById("calendar-panel");
+  if (!DATA || !DATA.calendar) {
+    el.innerHTML = `<span class="muted">Keine Daten verfügbar — data/daily.json fehlt oder ist leer.</span>`;
+    return;
+  }
+  const events = DATA.calendar.events_today_high_impact_usd || [];
+  if (DATA.calendar.error) {
+    el.innerHTML = `<span class="muted">Kalender-Abruf fehlgeschlagen: ${DATA.calendar.error}</span>`;
+    return;
+  }
+  if (!events.length) {
+    el.innerHTML = `<span class="muted">Keine roten USD-Termine für heute.</span>`;
+    return;
+  }
+  el.innerHTML = events
+    .map((e) => `<div class="event-row"><span class="time">${e.time_vienna}</span><span>${e.title}</span></div>`)
+    .join("");
+}
+
+function renderContext() {
+  const el = document.getElementById("context-panel");
+  if (!DATA) {
+    el.innerHTML = `<span class="muted">Keine Daten verfügbar.</span>`;
+    return;
+  }
+  const rows = [];
+
+  if (DATA.vix && DATA.vix.close != null) {
+    const dir = DATA.vix.change_pct > 0 ? "up" : DATA.vix.change_pct < 0 ? "down" : "";
+    rows.push(`<div class="stat-row"><span class="label">VIX</span>
+      <span class="value ${dir}">${DATA.vix.close.toFixed(2)} (${fmtPct(DATA.vix.change_pct)})</span></div>`);
+  }
+  if (DATA.spx && DATA.spx.close != null) {
+    const dir = DATA.spx.change_pct > 0 ? "up" : DATA.spx.change_pct < 0 ? "down" : "";
+    rows.push(`<div class="stat-row"><span class="label">SPX</span>
+      <span class="value ${dir}">${DATA.spx.close.toFixed(2)} (${fmtPct(DATA.spx.change_pct)})</span></div>`);
+  }
+  if (DATA.cftc_tff && DATA.cftc_tff.status === "ok") {
+    rows.push(`<div class="stat-row"><span class="label">CFTC Dealer, netto ${ageLabel(DATA.cftc_tff.age_days)}</span>
+      <span class="value">${DATA.cftc_tff.dealer_net.toLocaleString("de-AT")}</span></div>`);
+    rows.push(`<div class="stat-row"><span class="label">CFTC Leveraged Funds, netto ${ageLabel(DATA.cftc_tff.age_days)}</span>
+      <span class="value">${DATA.cftc_tff.leveraged_net.toLocaleString("de-AT")}</span></div>`);
+  } else {
+    rows.push(`<div class="stat-row"><span class="label">CFTC Positionierung</span>
+      <span class="value muted">nicht verfügbar</span></div>`);
+  }
+
+  el.innerHTML = rows.length ? rows.join("") : `<span class="muted">Keine Daten verfügbar.</span>`;
+}
+
+document.querySelectorAll("#mood-group .choice-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#mood-group .choice-btn").forEach((b) => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    mood = parseInt(btn.dataset.mood, 10);
+  });
+});
+document.querySelectorAll("#trade-group .choice-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#trade-group .choice-btn").forEach((b) => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    trade = btn.dataset.trade;
+  });
+});
+
+// ---------- Regel-Engine (deterministisch, kein Modell) ----------
+function buildChecklist() {
+  const items = []; // {severity: 'low'|'med'|'high', tag, text}
+  const flow = document.getElementById("flow-read").value.trim();
+
+  if (mood === null || trade === null) {
+    items.push({ severity: "med", tag: "Eingabe fehlt", text: "Bitte Stimmung und letzten Trade auswählen." });
+    return items;
+  }
+
+  // Stimmung
+  if (mood <= 2) {
+    items.push({
+      severity: "high",
+      tag: "Stimmung",
+      text: "Stimmung niedrig — Size deutlich reduzieren oder Session bewusst aussetzen. Kein Druck, heute handeln zu müssen.",
+    });
+  } else if (mood === 3) {
+    items.push({ severity: "low", tag: "Stimmung", text: "Neutral — normaler Prozess, auf erste Signale achten, bevor Size hochgefahren wird." });
+  }
+
+  // Letzter Trade
+  if (trade === "loss") {
+    items.push({
+      severity: "med",
+      tag: "Letzter Trade",
+      text: "Verlust — erst nach bestätigtem Setup wieder einsteigen, keine sofortige Re-Entry aus Frust.",
+    });
+  }
+
+  // Kombination: Verlust + schlechte Stimmung = höchstes Revenge-Trade-Risiko
+  if (trade === "loss" && mood <= 2) {
+    items.push({
+      severity: "high",
+      tag: "Kombination",
+      text: "Verlust und niedrige Stimmung zusammen — erhöhtes Revenge-Trade-Risiko. Feste Pause vor dem ersten Trade einplanen.",
+    });
+  }
+
+  // Kalender
+  const events = (DATA && DATA.calendar && DATA.calendar.events_today_high_impact_usd) || [];
+  events.forEach((e) => {
+    items.push({
+      severity: "med",
+      tag: "Termin",
+      text: `${e.time_vienna} Uhr: ${e.title} — keine neuen Positionen ca. 15 Min. davor/danach.`,
+    });
+  });
+
+  // VIX
+  if (DATA && DATA.vix && DATA.vix.change_pct != null) {
+    if (DATA.vix.change_pct >= 8) {
+      items.push({
+        severity: "med",
+        tag: "Volatilität",
+        text: `VIX ${fmtPct(DATA.vix.change_pct)} zum Vortag — Stops/Size an die höhere Schwankung anpassen.`,
+      });
+    } else if (DATA.vix.change_pct <= -8) {
+      items.push({
+        severity: "low",
+        tag: "Volatilität",
+        text: `VIX ${fmtPct(DATA.vix.change_pct)} zum Vortag — ruhigeres Umfeld, ggf. engere Ziele realistisch.`,
+      });
+    }
+  }
+
+  // CFTC Kontext (nur Hinweis, keine Richtungsaussage)
+  if (DATA && DATA.cftc_tff && DATA.cftc_tff.status === "ok" && DATA.cftc_tff.age_days > 5) {
+    items.push({
+      severity: "low",
+      tag: "Positionierung",
+      text: `CFTC-Daten sind ${DATA.cftc_tff.age_days} Tage alt — als Wochenkontext lesen, nicht als Signal für die heutige Session.`,
+    });
+  }
+
+  // Flow-Read wird nur gespiegelt, nicht bewertet
+  if (flow) {
+    items.push({ severity: "low", tag: "Dein Flow-Read", text: flow });
+  }
+
+  // Immer dabei
+  items.push({
+    severity: "low",
+    tag: "Prozess",
+    text: "Risiko pro Trade und Tagesverlustlimit vor der ersten Position festlegen, nicht danach.",
+  });
+
+  return items;
+}
+
+document.getElementById("generate-btn").addEventListener("click", () => {
+  const items = buildChecklist();
+  const out = document.getElementById("checklist-output");
+  out.innerHTML = items
+    .map(
+      (i) => `<div class="checklist-item ${i.severity}">
+        <span class="tag">${i.tag}</span>${i.text}
+      </div>`
+    )
+    .join("");
+  document.getElementById("result").style.display = "block";
+  document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+loadData();
+</script>
+</body>
+</html>
