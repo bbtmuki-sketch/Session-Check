@@ -1,47 +1,35 @@
 {
-  "generated_at": "2026-10-15T09:53:31.196Z",
+  "generated_at": "2026-10-16T09:47:25.491Z",
   "note": "Platzhalter. Wird von scripts/fetch-daily.mjs täglich überschrieben, sobald die GitHub Action läuft.",
   "calendar": {
     "source": "Forex Factory (nfs.faireconomy.media)",
     "events_today_high_impact_usd": [
       {
-        "title": "Core PPI m/m",
-        "time_vienna": " 14:30"
-      },
-      {
-        "title": "Core Retail Sales m/m",
-        "time_vienna": " 14:30"
-      },
-      {
-        "title": "PPI m/m",
-        "time_vienna": " 14:30"
-      },
-      {
-        "title": "Retail Sales m/m",
-        "time_vienna": " 14:30"
+        "title": "Fed Chairman Warsh Speaks",
+        "time_vienna": " 05:30"
       }
     ]
   },
   "vix": {
     "source": "CBOE",
-    "close": 16.87,
-    "prev_close": 15.27,
-    "change_pct": 10.48,
-    "as_of": "10/14/2026"
+    "close": 16.46,
+    "prev_close": 16.87,
+    "change_pct": -2.43,
+    "as_of": "10/15/2026"
   },
   "spx": {
     "source": "Yahoo Finance (inoffiziell)",
-    "close": 7718.93994140625,
-    "prev_close": 7805.4501953125,
-    "change_pct": -1.11,
-    "as_of": "2026-10-14"
+    "close": 7744.06005859375,
+    "prev_close": 7718.93994140625,
+    "change_pct": 0.33,
+    "as_of": "2026-10-15"
   },
   "cftc_tff": {
     "source": "CFTC Traders in Financial Futures",
     "status": "ok",
     "market": "E-MINI S&P 500 - CHICAGO MERCANTILE EXCHANGE",
     "report_date": "2026-10-06",
-    "age_days": 9,
+    "age_days": 10,
     "dealer_net": -600841,
     "leveraged_net": -415087
   }
