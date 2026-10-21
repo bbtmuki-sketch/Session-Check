@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-20T10:02:49.814Z",
+  "generated_at": "2026-10-21T10:07:22.288Z",
   "note": "Platzhalter. Wird von scripts/fetch-daily.mjs täglich überschrieben, sobald die GitHub Action läuft.",
   "calendar": {
     "source": "Forex Factory (nfs.faireconomy.media)",
@@ -7,24 +7,24 @@
   },
   "vix": {
     "source": "CBOE",
-    "close": 18.44,
-    "prev_close": 19.99,
-    "change_pct": -7.75,
-    "as_of": "10/19/2026"
+    "close": 17.31,
+    "prev_close": 18.44,
+    "change_pct": -6.13,
+    "as_of": "10/20/2026"
   },
   "spx": {
     "source": "Yahoo Finance (inoffiziell)",
-    "close": 7690.72998046875,
-    "prev_close": 7659.43994140625,
-    "change_pct": 0.41,
-    "as_of": "2026-10-19"
+    "close": 7712.56982421875,
+    "prev_close": 7690.72998046875,
+    "change_pct": 0.28,
+    "as_of": "2026-10-20"
   },
   "cftc_tff": {
     "source": "CFTC Traders in Financial Futures",
     "status": "ok",
     "market": "E-MINI S&P 500 - CHICAGO MERCANTILE EXCHANGE",
     "report_date": "2026-10-13",
-    "age_days": 7,
+    "age_days": 8,
     "dealer_net": -602358,
     "leveraged_net": -408726
   }
