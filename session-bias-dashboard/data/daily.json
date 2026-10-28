@@ -1,30 +1,43 @@
 {
-  "generated_at": "2026-10-27T10:32:06.946Z",
+  "generated_at": "2026-10-28T11:19:44.342Z",
   "note": "Platzhalter. Wird von scripts/fetch-daily.mjs täglich überschrieben, sobald die GitHub Action läuft.",
   "calendar": {
     "source": "Forex Factory (nfs.faireconomy.media)",
-    "events_today_high_impact_usd": []
+    "events_today_high_impact_usd": [
+      {
+        "title": "Federal Funds Rate",
+        "time_vienna": " 19:00"
+      },
+      {
+        "title": "FOMC Statement",
+        "time_vienna": " 19:00"
+      },
+      {
+        "title": "FOMC Press Conference",
+        "time_vienna": " 19:30"
+      }
+    ]
   },
   "vix": {
     "source": "CBOE",
-    "close": 18.39,
-    "prev_close": 19.45,
-    "change_pct": -5.45,
-    "as_of": "10/26/2026"
+    "close": 17.52,
+    "prev_close": 18.39,
+    "change_pct": -4.73,
+    "as_of": "10/27/2026"
   },
   "spx": {
     "source": "Yahoo Finance (inoffiziell)",
-    "close": 7676.77001953125,
-    "prev_close": 7623.68017578125,
-    "change_pct": 0.7,
-    "as_of": "2026-10-26"
+    "close": 7722.60009765625,
+    "prev_close": 7676.77001953125,
+    "change_pct": 0.6,
+    "as_of": "2026-10-27"
   },
   "cftc_tff": {
     "source": "CFTC Traders in Financial Futures",
     "status": "ok",
     "market": "E-MINI S&P 500 - CHICAGO MERCANTILE EXCHANGE",
     "report_date": "2026-10-20",
-    "age_days": 7,
+    "age_days": 8,
     "dealer_net": -636931,
     "leveraged_net": -371245
   }
