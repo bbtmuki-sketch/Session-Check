@@ -1,44 +1,31 @@
 {
-  "generated_at": "2026-11-06T12:56:05.788Z",
+  "generated_at": "2026-11-09T13:52:40.693Z",
   "note": "Platzhalter. Wird von scripts/fetch-daily.mjs täglich überschrieben, sobald die GitHub Action läuft.",
   "calendar": {
     "source": "Forex Factory (nfs.faireconomy.media)",
-    "events_today_high_impact_usd": [
-      {
-        "title": "Average Hourly Earnings m/m",
-        "time_vienna": " 14:30"
-      },
-      {
-        "title": "Non-Farm Employment Change",
-        "time_vienna": " 14:30"
-      },
-      {
-        "title": "Unemployment Rate",
-        "time_vienna": " 14:30"
-      }
-    ]
+    "events_today_high_impact_usd": []
   },
   "vix": {
     "source": "CBOE",
-    "close": 28.18,
-    "prev_close": 16.61,
-    "change_pct": 69.66,
-    "as_of": "11/05/2026"
+    "close": 25.64,
+    "prev_close": 28.18,
+    "change_pct": -9.01,
+    "as_of": "11/06/2026"
   },
   "spx": {
     "source": "Yahoo Finance (inoffiziell)",
-    "close": 7353.72998046875,
-    "prev_close": 7688.6201171875,
-    "change_pct": -4.36,
-    "as_of": "2026-11-05"
+    "close": 7376.85986328125,
+    "prev_close": 7353.72998046875,
+    "change_pct": 0.31,
+    "as_of": "2026-11-06"
   },
   "cftc_tff": {
     "source": "CFTC Traders in Financial Futures",
     "status": "ok",
     "market": "E-MINI S&P 500 - CHICAGO MERCANTILE EXCHANGE",
-    "report_date": "2026-10-27",
-    "age_days": 11,
-    "dealer_net": -639593,
-    "leveraged_net": -400604
+    "report_date": "2026-11-03",
+    "age_days": 7,
+    "dealer_net": -688574,
+    "leveraged_net": -372318
   }
 }
