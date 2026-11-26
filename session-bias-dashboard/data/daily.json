@@ -1,31 +1,22 @@
 {
-  "generated_at": "2026-11-25T15:34:47.235Z",
+  "generated_at": "2026-11-26T15:12:09.257Z",
   "note": "Platzhalter. Wird von scripts/fetch-daily.mjs täglich überschrieben, sobald die GitHub Action läuft.",
   "calendar": {
     "source": "Forex Factory (nfs.faireconomy.media)",
-    "events_today_high_impact_usd": [
-      {
-        "title": "Core PCE Price Index m/m",
-        "time_vienna": " 14:30"
-      },
-      {
-        "title": "Prelim GDP q/q",
-        "time_vienna": " 14:30"
-      }
-    ]
+    "events_today_high_impact_usd": []
   },
   "vix": {
     "source": "CBOE",
-    "close": 26.36,
-    "prev_close": 26.62,
-    "change_pct": -0.98,
-    "as_of": "11/24/2026"
+    "close": 28.29,
+    "prev_close": 26.36,
+    "change_pct": 7.32,
+    "as_of": "11/25/2026"
   },
   "spx": {
     "source": "Yahoo Finance (inoffiziell)",
-    "close": 7022.64990234375,
+    "close": 7182.77978515625,
     "prev_close": 7201.08984375,
-    "change_pct": -2.48,
+    "change_pct": -0.25,
     "as_of": "2026-11-25"
   },
   "cftc_tff": {
@@ -33,7 +24,7 @@
     "status": "ok",
     "market": "E-MINI S&P 500 - CHICAGO MERCANTILE EXCHANGE",
     "report_date": "2026-11-17",
-    "age_days": 9,
+    "age_days": 10,
     "dealer_net": -787376,
     "leveraged_net": -234978
   }
